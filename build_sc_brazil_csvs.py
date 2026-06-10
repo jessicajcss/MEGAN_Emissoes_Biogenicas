@@ -32,7 +32,7 @@ herb = np.clip(grass, 0, 100)
 ct = pd.DataFrame({
     'CID': ids,
     'ICELL': ids,
-    'JCELl': np.ones_like(ids),
+    'JCELL': np.ones_like(ids),
     'NEEDL': needl,
     'TROPI': tropi,
     'BROAD': broad,

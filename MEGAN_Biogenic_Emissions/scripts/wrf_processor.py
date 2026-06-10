@@ -122,8 +122,8 @@ def read_wrf_timestep(filepath: str):
     Returns
     -------
     dict[str, np.ndarray]
-        Dictionary with keys ``T2``, ``SWDOWN``, ``U10``, ``V10``, ``Q2``,
-        ``PSFC``, ``XLAT``, and ``XLONG`` as float64 2-D arrays.
+        Dictionary with keys ``T2``, ``SWDOWN``, ``PPFD``, ``U10``, ``V10``,
+        ``Q2``, ``PSFC``, ``XLAT``, and ``XLONG`` as float64 2-D arrays.
     """
     ds = xr.open_dataset(filepath)
     def first2d(name):
@@ -141,5 +141,6 @@ def read_wrf_timestep(filepath: str):
         "XLAT": first2d("XLAT"),
         "XLONG": first2d("XLONG"),
     }
+    out["PPFD"] = out["SWDOWN"] * 2.25
     ds.close()
     return out
