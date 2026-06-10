@@ -1,6 +1,3 @@
-!pip install numpy xarray rioxarray rasterio scipy netCDF4
-
-
 import os
 import re
 import glob
