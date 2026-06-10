@@ -22,6 +22,27 @@ def _add_crs(ds: xr.Dataset):
 
 
 def write_species_dataset(outpath, species_data, grid_area, xlat, xlon, conventions="CF-1.8"):
+    """Write a 2-D species dataset to NetCDF with CF-1.8 and EPSG:4326 metadata.
+
+    Parameters
+    ----------
+    outpath : str
+        Target NetCDF path.
+    species_data : dict[str, np.ndarray]
+        Mapping of variable name to 2-D array on ``(south_north, west_east)``.
+    grid_area : np.ndarray
+        2-D grid-cell area array in m2.
+    xlat, xlon : np.ndarray
+        2-D latitude/longitude arrays in degrees (curvilinear WRF grid).
+    conventions : str, default \"CF-1.8\"
+        Value used for the global ``Conventions`` attribute.
+
+    Notes
+    -----
+    Each species variable is written with ``coordinates='latitude longitude'``
+    and ``grid_mapping='crs'``. A ``crs`` variable is added with EPSG:4326
+    metadata for GIS compatibility.
+    """
     ny, nx = xlat.shape
     ds = xr.Dataset()
     ds.coords["south_north"] = np.arange(ny)

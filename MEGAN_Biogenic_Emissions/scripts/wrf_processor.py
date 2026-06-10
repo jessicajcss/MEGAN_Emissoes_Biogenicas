@@ -24,6 +24,34 @@ def parse_wrf_datetime(text: str):
 
 
 def prepare_wrf_inputs(source_mode: str, wrf_dir: str, link_list_file: str, cache_dir: str, start_date: datetime, end_date: datetime, warmup_hours: int = 240) -> str:
+    """Prepare WRF input files for the requested simulation window.
+
+    Parameters
+    ----------
+    source_mode : str
+        ``"local"`` to use existing local WRF files, ``"links"`` to download
+        matching files listed in ``link_list_file`` into ``cache_dir``.
+    wrf_dir : str
+        Local directory containing ``wrfout_d02_*`` files when using local mode.
+    link_list_file : str
+        Text file with one download URL per line for remote WRF files.
+    cache_dir : str
+        Directory used to store downloaded/extracted WRF files.
+    start_date, end_date : datetime
+        Inclusive simulation date range.
+    warmup_hours : int, default 240
+        Number of hours before ``start_date`` needed for rolling means.
+
+    Returns
+    -------
+    str
+        Directory path containing prepared WRF files.
+
+    Raises
+    ------
+    ValueError
+        If ``source_mode`` is not ``"local"`` or ``"links"``.
+    """
     if source_mode == "local":
         return wrf_dir
     if source_mode != "links":
@@ -62,6 +90,18 @@ def prepare_wrf_inputs(source_mode: str, wrf_dir: str, link_list_file: str, cach
 
 
 def find_wrf_files(wrf_dir: str, prefix: str, start_dt: datetime, end_dt: datetime):
+    """List WRF files in a date range from filenames.
+
+    Expected names follow ``{prefix}YYYY-MM-DD_HH_00_00`` (or parseable
+    timestamp variants with ``_`` or ``:`` separators). Files with timestamps
+    outside ``[start_dt, end_dt]`` are ignored.
+
+    Returns
+    -------
+    list[tuple[datetime, str]]
+        Sorted list of ``(timestamp, filepath)``. Returns an empty list if no
+        files match.
+    """
     files = sorted(glob.glob(os.path.join(wrf_dir, f"{prefix}*")))
     out = []
     for fp in files:
@@ -72,6 +112,19 @@ def find_wrf_files(wrf_dir: str, prefix: str, start_dt: datetime, end_dt: dateti
 
 
 def read_wrf_timestep(filepath: str):
+    """Read one WRF file and extract required 2-D meteorological fields.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to a ``wrfout_d02_*`` NetCDF file.
+
+    Returns
+    -------
+    dict[str, np.ndarray]
+        Dictionary with keys ``T2``, ``SWDOWN``, ``U10``, ``V10``, ``Q2``,
+        ``PSFC``, ``XLAT``, and ``XLONG`` as float64 2-D arrays.
+    """
     ds = xr.open_dataset(filepath)
     def first2d(name):
         v = ds[name]
